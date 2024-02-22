@@ -1,13 +1,18 @@
-import { config } from 'dotenv';
+import 'express-async-errors'
+import express from 'express'
+import { AppDataSource } from './data-source'
+import routes from './routes'
+import { errorMiddleware } from './middlewares/error'
 
-if (process.env.NODE_ENV !== 'production') {
-  config();
-}
-// call after config() to access the env variables
-import { app } from './api';
 
-const port = process.env.PORT || 3333;
+AppDataSource.initialize().then(() => {
+	const app = express()
 
-app.listen(port, () =>
-  console.log(`API available on http://localhost:${port}`)
-);
+	app.use(express.json())
+
+	app.use(routes)
+
+	app.use(errorMiddleware)
+
+	return app.listen(process.env.PORT)
+})
